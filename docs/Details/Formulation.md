@@ -2,10 +2,10 @@
 
 We follow mostly the working of Tryggvason et al. (2011, $\S$ 6.5.1).
 
-The problem is as follows. Given an interface front located at $\bm{x} = \bm{x}_f$, we seek to determine the marker-function field $\phi(x,y,z)$ given discrete knowledge of the interface front. First, we can relate the jump in the indicator function (i.e. its gradient), $\bm{G}$ analytically via
+The problem is as follows. Given an interface front located at $\mathbf{x} = \mathbf{x}_f$, we seek to determine the marker-function field $\phi(x,y,z)$ given discrete knowledge of the interface front. First, we can relate the jump in the indicator function (i.e. its gradient), $\mathbf{G}$ analytically via
 
 $$
-\bm{G} \equiv \nabla \phi = \int\Delta\phi \mathbf{\hat{n}}\delta(\bm{x} - \bm{x}_f)\,\mathrm{d}A
+\mathbf{G} \equiv \nabla \phi = \int\Delta\phi \mathbf{\hat{n}}\delta(\mathbf{x} - \mathbf{x}_f)\,\mathrm{d}A
 $$
 
 where $\Delta \phi$ is the jump in the indicator function across the interface. Typical convention is to let $\phi \in [0,1]$ such that $\Delta \phi = 1$ as a constant (although this also depends on the convention adopted for the normal vector direction).
@@ -13,17 +13,17 @@ where $\Delta \phi$ is the jump in the indicator function across the interface. 
 The Poisson reconstruction method seeks to construct the indicator field by solving a Poisson equation for $\phi$. That is, a divergence form of the above equation:
 
 $$
-\nabla^2 \phi = \nabla \cdot \bm{G}.
+\nabla^2 \phi = \nabla \cdot \mathbf{G}.
 $$
 
 # Numerical discretisation
 
-Suppose the Lagrangian front $\bm{x}_f$ is represented by $l$ Lagrangian nodes, characterised by element areas $\Delta s_l$ and normal vectors $\mathbf{\hat{n}}_l$. 
+Suppose the Lagrangian front $\mathbf{x}_f$ is represented by $l$ Lagrangian nodes, characterised by element areas $\Delta s_l$ and normal vectors $\mathbf{\hat{n}}_l$. 
 
 To discretise the RHS of the Poisson equation, we employ a standard Lagrangian-to-Eulerian interpolation procedure:
 
 $$
-\bm{G}_{ijk} = \Delta \phi \sum_{l} \mathbf{\hat{n}}_l \tilde{\delta}^l_{ijk}\frac{\Delta s_l}{\Delta x \Delta y \Delta z}
+\mathbf{G}_{ijk} = \Delta \phi \sum_{l} \mathbf{\hat{n}}_l \tilde{\delta}^l_{ijk}\frac{\Delta s_l}{\Delta x \Delta y \Delta z}
 $$
 
 where $\tilde{\delta}^l_{ijk}$ is a regularised delta function. Again, common in Lagrangian methods. It is computed as a product of 1D regularised delta functions, $d(\cdot)$:
@@ -42,7 +42,7 @@ d(r) = \begin{cases}
 \end{cases}
 $$
 
-Next we consider the computation of $\bm{G}_{ijk}$. Notice how in the RHS of the Poisson equation, we want $\nabla \cdot \bm{G}$. Since our indicator field will be stored at cell centres, we ideally want $\nabla \cdot \bm{G}$ situated at cell faces. That is, we should employ a staggered grid calculation when evaluating $\bm{G}$ from the interpolation. Writing $\bm{G} = (G^x,G^y,G^z)$, then we should have for example...
+Next we consider the computation of $\mathbf{G}_{ijk}$. Notice how in the RHS of the Poisson equation, we want $\nabla \cdot \mathbf{G}$. Since our indicator field will be stored at cell centres, we ideally want $\nabla \cdot \mathbf{G}$ situated at cell faces. That is, we should employ a staggered grid calculation when evaluating $\mathbf{G}$ from the interpolation. Writing $\mathbf{G} = (G^x,G^y,G^z)$, then we should have for example...
 
 $$
 G^x_{i\pm1/2,j,k} = \Delta \phi \sum_{l} \hat{n}^x_l \tilde{\delta}^l_{i\pm1,2,j,k}\frac{\Delta s_l}{\Delta x \Delta y \Delta z}.
@@ -59,7 +59,7 @@ This discrete Poisson equation can be solved using any standard method, but some
 In the present implementation, I have presumed the bounding Eulerian box is "uniform" such that I can apply uniform Dirichlet $\phi = 0$ for all boundaries. Periodic boundary conditions also work for this. This enables the use of fast-Poisson solver methods via DCTs or FFTs. That is, I solve:
 
 $$
-\left( \frac{\lambda_{k}}{\Delta x^2} + \frac{\lambda_{m}}{\Delta y^2} + \frac{\lambda_{n}}{\Delta z^2} \right)\hat{\phi}_{kmn} = \widehat{(\nabla \cdot \bm{G})}_{kmn} \implies \hat{\phi}_{kmn} = \frac{\widehat{(\nabla \cdot \bm{G})}_{kmn}}{\frac{\lambda_{k}}{\Delta x^2} + \frac{\lambda_{m}}{\Delta y^2} + \frac{\lambda_{n}}{\Delta z^2}}
+\left( \frac{\lambda_{k}}{\Delta x^2} + \frac{\lambda_{m}}{\Delta y^2} + \frac{\lambda_{n}}{\Delta z^2} \right)\hat{\phi}_{kmn} = \widehat{(\nabla \cdot \mathbf{G})}_{kmn} \implies \hat{\phi}_{kmn} = \frac{\widehat{(\nabla \cdot \mathbf{G})}_{kmn}}{\frac{\lambda_{k}}{\Delta x^2} + \frac{\lambda_{m}}{\Delta y^2} + \frac{\lambda_{n}}{\Delta z^2}}
 $$
 
 where $\lambda$ are the modified wavenumbers. This can be directly solved algebraically for each mode $(k,m,n)$ after which $\phi_{ijk}$ may be obtained via an inverse transform.
