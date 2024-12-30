@@ -1,6 +1,6 @@
 # Governing formulation
 
-We follow mostly the working of Tryggvason et al. (2011, $\S$ 6.5.1).
+I follow mostly the working of Tryggvason et al. (2011, $\S$ 6.5.1).
 
 The problem is as follows. Given an interface front located at $\mathbf{x} = \mathbf{x}_f$, we seek to determine the marker-function field $\phi(x,y,z)$ given discrete knowledge of the interface front. First, we can relate the jump in the indicator function (i.e. its gradient), $\mathbf{G}$ analytically via
 
@@ -29,7 +29,7 @@ $$
 where $\tilde{\delta}^l_{ijk}$ is a regularised delta function. Again, common in Lagrangian methods. It is computed as a product of 1D regularised delta functions, $d(\cdot)$:
 
 $$
-\tilde{\delta}^l_{ijk} = d(r_x)d(r_y)d(r_z), \quad r_x = (x_l - x_i) \Delta x, \, \text{etc}.
+\tilde{\delta}^l_{ijk} = d(r_x)d(r_y)d(r_z), \quad r_x = (x_l - x_i) / \Delta x, \, \text{etc}.
 $$
 
 Various choices exist for the regularised delta functions (see for example table 6.1 of Tryggvason et al. 2011, table 5.1 of Kajishima & Taira 2016). A choice which has worked well from my experience in testing is the formulation of Brackbill & Ruppel (1986):
