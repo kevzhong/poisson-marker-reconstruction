@@ -45,7 +45,7 @@ $$
 Next we consider the computation of $\mathbf{G}_{ijk}$. Notice how in the RHS of the Poisson equation, we want $\nabla \cdot \mathbf{G}$. Since our indicator field will be stored at cell centres, we ideally want $\nabla \cdot \mathbf{G}$ situated at cell faces. That is, we should employ a staggered grid calculation when evaluating $\mathbf{G}$ from the interpolation. Writing $\mathbf{G} = (G^x,G^y,G^z)$, then we should have for example...
 
 $$
-G^x_{i\pm1/2,j,k} = \Delta \phi \sum_{l} \hat{n}^x_l \tilde{\delta}^l_{i\pm1,2,j,k}\frac{\Delta s_l}{\Delta x \Delta y \Delta z}.
+G^x_{i\pm1/2,j,k} = \Delta \phi \sum_{l} \hat{n}^x_l \tilde{\delta}^l_{i\pm1/2,j,k}\frac{\Delta s_l}{\Delta x \Delta y \Delta z}.
 $$
 
 With this, we can then write out the stencil of the discrete Poisson equation explicitly, $\nabla^2 \phi_{ijk} = (\nabla \cdot G)_{ijk}$:
@@ -64,12 +64,16 @@ $$
 
 where $\lambda$ are the modified wavenumbers. This can be directly solved algebraically for each mode $(k,m,n)$ after which $\phi_{ijk}$ may be obtained via an inverse transform.
 
-Some delicate consideration is needed when considering the $\lambda_k = \lambda_m = \lambda_n = 0$ mode to avoid a division by zero. Here, $\hat{\phi}_{000}$ corresponds to the mean value of $\phi_{ijk}$ in the entire domain, which physically, would represent the volume of the immersed object. This is not known a-priori, and thus we cannot know exactly what value we should assign $\hat{\phi}_{000}$ (atleast to my knowledge). However, we can use the fact that we desire $\phi \in [0,1]$ in our final solution. Namely, we arbitrary assign $\hat{\phi}_{000} = 0$ and compute the inverse transform which will have a bound $[\phi_{min},\phi_{max}]$. The we simply apply the uniform shift to obtain  $\phi \in [0,1]$:
+Some delicate consideration is needed when considering the $\lambda_k = \lambda_m = \lambda_n = 0$ mode to avoid a division by zero. Here, $\hat{\phi}_{000}$ corresponds to the mean value of $\phi_{ijk}$ in the entire domain, which physically, can be related to the volume of the immersed object, $\mathcal{V}$. Since we know the volume of the triangulated geometry (calculting the volume of a triangulated surface is a standard computation). If we have $\phi = 0$ outside the triangulated front and $\phi = 1$ inside, then we can set
+
+$$
+\hat{\phi}_{0 0 0}  =\mathcal{V} / (L_x L_y L_z)
+$$
+
+ to enforce volume conservation between the Eulerian indicator field and Lagrangian geometry. Here, $L_x L_y L_z$ is the total volume of the Eulerian domain. This is not without issues however, as this does not guarantee the boundedness of $\phi \in [0,1]$. From my experience, I have observed $\phi \in [\phi_{min},\phi_{max}] [-10^{-4},1.0008]$, close but not quite. This unboundedness can be catostraphic for multiphase CFD calculations, for instance by introducing negative densities, which are unphysical. A compromise is to shift the field from its bounds $[\phi_{min},\phi_{max}]$ to $\phi \in [0,1]$ using a uniform shift:
 
 $$
 \phi_{ijk} \leftarrow \frac{\phi_{ijk} - \phi_{min}}{\phi_{max} - \phi_{min}}.
 $$
 
-## Appendix: Poisson surface reconstruction in computational geometry
-
-WIP. Link to CG formulation and similarities.
+The trade-off, then, is a loss of volume conservation to ensure $\phi \in [0,1]$ boundedness. As of yet, I am unsure of any simple way in which both can be simultaneously satisfied.

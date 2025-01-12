@@ -2,6 +2,7 @@ program main
     use geom
     use delta
     use fftw3
+    use omp_lib
     implicit none
     integer :: i,j,k,n
     integer :: ii, jj, kk
@@ -43,6 +44,21 @@ program main
     real :: DI = -1.0
     real :: phimin, phimax, inv_dphi
 
+    ! For OMP acceleration
+    integer :: void, nthreads
+
+
+    void =  fftw_init_threads()
+
+
+    !$omp parallel
+    !$omp master
+    nthreads = OMP_GET_NUM_THREADS() 
+    !$omp end master
+    !$omp end parallel
+
+    call  fftw_plan_with_nthreads(nthreads)
+
     ! filename = "stl/unitSphere_N3.stl"
     ! Nx = 64
     ! Ny = 64
@@ -51,13 +67,13 @@ program main
     ! Ly = 10.0
     ! Lz = 10.0
 
-    filename = "stl/unitSphere_N4.stl"
-    Nx = 128
-    Ny = 128
-    Nz = 128
-    Lx = 10.0
-    Ly = 10.0
-    Lz = 10.0
+    ! filename = "stl/unitSphere_N4.stl"
+    ! Nx = 128
+    ! Ny = 128
+    ! Nz = 128
+    ! Lx = 10.0
+    ! Ly = 10.0
+    ! Lz = 10.0
 
     ! filename = "stl/unitSphere_N5.stl"
     ! Nx = 256
@@ -67,13 +83,13 @@ program main
     ! Ly = 10.0
     ! Lz = 10.0
 
-    ! filename = "stl/unitSphere_N6.stl"
-    ! Nx = 512
-    ! Ny = 512
-    ! Nz = 512
-    ! Lx = 10.0
-    ! Ly = 10.0
-    ! Lz = 10.0
+    filename = "stl/unitSphere_N6.stl"
+    Nx = 512
+    Ny = 512
+    Nz = 512
+    Lx = 10.0
+    Ly = 10.0
+    Lz = 10.0
 
     ! filename = "stl/ellipsoid_N32.stl"
     ! Nx = 128
@@ -148,6 +164,8 @@ program main
 
     ptr4 = fftw_alloc_real(int(Nx * Ny * Nz, C_SIZE_T))
     call c_f_pointer(ptr4, rhs, [Nx,Ny,Nz])
+
+    write(*,*) "Generating FFT plan..."
 
     ! 3D real to complex plan
     fftw_plan_fwd = fftw_plan_dft_r2c_3d(Nx, Ny, Nz, rhs(:,:,:), rhs_hat(:,:,:), FFTW_ESTIMATE)
@@ -327,6 +345,7 @@ program main
         do j = 1,Ny
             do i = 1,Nx/2+1
 
+                rhs_hat(i,j,k) =  rhs_hat(i,j,k) / dble(Nx * Ny * Nz) ! Normalisation for back-transform
                 phihat(i,j,k) = rhs_hat(i,j,k) / ( lmb_x_on_dx2(i) + lmb_y_on_dy2(j) + lmb_z_on_dz2(k) )
 
             enddo
@@ -334,24 +353,44 @@ program main
     enddo
 
     ! Arbitrary
-    phihat(1,1,1) = 0.0
+    phihat(1,1,1) = 4.18879020479 / (Lx * Ly * Lz)
 
     call dfftw_execute_dft_c2r(fftw_plan_bwd, phihat(:,:,:), phi(:,:,:))
 
     write(*,*) "Finished Poisson solve, normalising and writing data..."
 
-    ! Re-normalisation to [0,1]
+    ! ! This is a non-volume-conserving operation
+    ! !
+    ! ! Re-normalisation to [0,1]
+    ! phimin = minval(phi) ; phimax = maxval(phi) 
+    ! inv_dphi = 1.0 / (phimax - phimin)
+    ! do k = 1,Nz
+    !     do j = 1,Ny
+    !         do i = 1,Nx
+    !             phi(i,j,k) = (phi(i,j,k) - phimin ) * inv_dphi
+    !         enddo
+    !     enddo
+    ! enddo
+
+    !call write3DField(phi,Nx,Ny,Nz,dx,dy,dz,'output')
+
+        ! Re-normalisation to [0,1]
     phimin = minval(phi) ; phimax = maxval(phi) 
-    inv_dphi = 1.0 / (phimax - phimin)
+    inv_dphi = 0.0
+    ! Compute and back out the mean
     do k = 1,Nz
         do j = 1,Ny
             do i = 1,Nx
-                phi(i,j,k) = (phi(i,j,k) - phimin ) * inv_dphi
+                inv_dphi = inv_dphi + phi(i,j,k)*dx*dy*dz
             enddo
         enddo
     enddo
 
-    call write3DField(phi,Nx,Ny,Nz,dx,dy,dz,'output')
+
+    write(*,*) "Volume is: ", inv_dphi
+    write(*,*) "phimin, phimax is: ", phimin, phimax
+
+    !call write3DField(phi,Nx,Ny,Nz,dx,dy,dz,'output')
 
 
     deallocate(Atri) ; deallocate(nhat_F)
@@ -366,6 +405,7 @@ program main
     call fftw_free(ptr2) ! phihat
     call fftw_free(ptr3) ! rhs_hat
     call fftw_free(ptr4) ! rhs
+    call fftw_cleanup_threads
 
     deallocate(Gx) ; deallocate(Gy) ; deallocate(Gz)
 
