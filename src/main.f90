@@ -224,11 +224,6 @@ program main
         avgE = avgE + dble( e1 + e2 + e3 )
         cntE = cntE + 3
 
-        ! ! Volume of Lagrangian object
-        ! Volume =  Volume    +  xyz(1,v1) * (xyz(2,v2)*xyz(3,v3) - xyz(3,v2)*xyz(2,v3)) &
-        !                     +  xyz(1,v2) * (xyz(2,v3)*xyz(3,v1) - xyz(3,v3)*xyz(2,v1)) &
-        !                     +  xyz(1,v3) * (xyz(2,v1)*xyz(3,v2) - xyz(3,v1)*xyz(2,v2))
-
         ! Volume of Lagrangian object: accumulate signed Tetrahedral volume
         Volume =  Volume    +  v1x * (v2y*v3z - v2z*v3y) &
                             +  v2x * (v3y*v1z - v3z*v1y) &
@@ -237,14 +232,10 @@ program main
     close(10)
 
     Volume = Volume / 6.0 ! normalization
-
     avgE = avgE / dble(cntE)
 
     write(*,*) "Volume of triangulated surface: ", Volume
-
-
     write(*,*) "min, avg, max edge/dx: ", minE/dx, avgE/dx, maxE/dx 
-
 
 
     !--------------- Re-centre geometry if needed -------------------------
@@ -397,21 +388,21 @@ program main
 
     !call write3DField(phi,Nx,Ny,Nz,dx,dy,dz,'output')
 
-        ! Re-normalisation to [0,1]
-    phimin = minval(phi) ; phimax = maxval(phi) 
-    inv_dphi = 0.0
-    ! Compute and back out the mean
-    do k = 1,Nz
-        do j = 1,Ny
-            do i = 1,Nx
-                inv_dphi = inv_dphi + phi(i,j,k)*dx*dy*dz
-            enddo
-        enddo
-    enddo
+    !     ! Re-normalisation to [0,1]
+    ! phimin = minval(phi) ; phimax = maxval(phi) 
+    ! inv_dphi = 0.0
+    ! ! Compute and back out the mean
+    ! do k = 1,Nz
+    !     do j = 1,Ny
+    !         do i = 1,Nx
+    !             inv_dphi = inv_dphi + phi(i,j,k)*dx*dy*dz
+    !         enddo
+    !     enddo
+    ! enddo
 
 
-    write(*,*) "Volume is: ", inv_dphi
-    write(*,*) "phimin, phimax is: ", phimin, phimax
+    ! write(*,*) "Volume is: ", inv_dphi
+    ! write(*,*) "phimin, phimax is: ", phimin, phimax
 
     call write3DField(phi,Nx,Ny,Nz,dx,dy,dz,'output')
 
