@@ -84,13 +84,13 @@ program main
     ! Ly = 10.0
     ! Lz = 10.0
 
-    filename = "stl/unitSphere_N6.stl"
-    Nx = 512
-    Ny = 512
-    Nz = 512
-    Lx = 10.0
-    Ly = 10.0
-    Lz = 10.0
+    ! filename = "stl/unitSphere_N6.stl"
+    ! Nx = 512
+    ! Ny = 512
+    ! Nz = 512
+    ! Lx = 10.0
+    ! Ly = 10.0
+    ! Lz = 10.0
 
     ! filename = "stl/ellipsoid_N32.stl"
     ! Nx = 128
@@ -100,6 +100,13 @@ program main
     ! Ly = 8.0
     ! Lz = 8.0
 
+    filename = "stl/256_ellipse.stl"
+    Nx = 256
+    Ny = 256
+    Nz = 256
+    Lx = 1.0
+    Ly = 1.0
+    Lz = 1.0
 
     ! ---------------------------- Generate Eulerian grid ---------------------------------
     ! Grid spacing
