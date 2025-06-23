@@ -9,6 +9,7 @@ program main
     integer :: Ntri
     real(kind=4) :: nhx,nhy,nhz,v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z
     real(kind=4) :: e1, e2, e3
+    real(kind=4) :: Volume = 0.0
     real(kind=4) :: maxE = -9999.0
     real(kind=4) :: minE = 9999.0
     real(kind=8) :: avgE = 0.0
@@ -215,10 +216,25 @@ program main
 
         avgE = avgE + dble( e1 + e2 + e3 )
         cntE = cntE + 3
+
+        ! ! Volume of Lagrangian object
+        ! Volume =  Volume    +  xyz(1,v1) * (xyz(2,v2)*xyz(3,v3) - xyz(3,v2)*xyz(2,v3)) &
+        !                     +  xyz(1,v2) * (xyz(2,v3)*xyz(3,v1) - xyz(3,v3)*xyz(2,v1)) &
+        !                     +  xyz(1,v3) * (xyz(2,v1)*xyz(3,v2) - xyz(3,v1)*xyz(2,v2))
+
+        ! Volume of Lagrangian object: accumulate signed Tetrahedral volume
+        Volume =  Volume    +  v1x * (v2y*v3z - v2z*v3y) &
+                            +  v2x * (v3y*v1z - v3z*v1y) &
+                            +  v3x * (v1y*v2z - v1z*v2y)
     end do
     close(10)
 
+    Volume = Volume / 6.0 ! normalization
+
     avgE = avgE / dble(cntE)
+
+    write(*,*) "Volume of triangulated surface: ", Volume
+
 
     write(*,*) "min, avg, max edge/dx: ", minE/dx, avgE/dx, maxE/dx 
 
@@ -353,7 +369,7 @@ program main
     enddo
 
     ! Arbitrary
-    phihat(1,1,1) = 4.18879020479 / (Lx * Ly * Lz)
+    phihat(1,1,1) = dble(Volume) / (Lx * Ly * Lz)
 
     call dfftw_execute_dft_c2r(fftw_plan_bwd, phihat(:,:,:), phi(:,:,:))
 
@@ -390,7 +406,7 @@ program main
     write(*,*) "Volume is: ", inv_dphi
     write(*,*) "phimin, phimax is: ", phimin, phimax
 
-    !call write3DField(phi,Nx,Ny,Nz,dx,dy,dz,'output')
+    call write3DField(phi,Nx,Ny,Nz,dx,dy,dz,'output')
 
 
     deallocate(Atri) ; deallocate(nhat_F)
