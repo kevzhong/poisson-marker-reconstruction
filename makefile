@@ -1,4 +1,4 @@
-FC = gfortran
+FC = mpifort
 SRCDIR = src
 OBJDIR = obj
 
@@ -16,7 +16,7 @@ FFTW_PREFIX := $(shell pkg-config --variable=prefix fftw3)
 #--- End prefix modification -----------------------------------------------
 
 FFLAGS += -I$(FFTW_PREFIX)/include 
-LIBS = -L$(FFTW_PREFIX)/lib  -lfftw3_omp -lfftw3 -lm
+LIBS = -L$(FFTW_PREFIX)/lib -lfftw3_mpi -lfftw3 -lm
 
 #----- END FFTW library-------------------
 

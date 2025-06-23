@@ -2,7 +2,7 @@ program main
     use geom
     use delta
     use fftw3
-    use omp_lib
+    !use omp_lib
     implicit none
     integer :: i,j,k,n
     integer :: ii, jj, kk
@@ -46,19 +46,19 @@ program main
     real :: phimin, phimax, inv_dphi
 
     ! For OMP acceleration
-    integer :: void, nthreads
+    !integer :: void, nthreads
 
 
-    void =  fftw_init_threads()
+    !void =  fftw_init_threads()
 
 
-    !$omp parallel
-    !$omp master
-    nthreads = OMP_GET_NUM_THREADS() 
-    !$omp end master
-    !$omp end parallel
+    ! !$omp parallel
+    ! !$omp master
+    ! nthreads = OMP_GET_NUM_THREADS() 
+    ! !$omp end master
+    ! !$omp end parallel
 
-    call  fftw_plan_with_nthreads(nthreads)
+    !call  fftw_plan_with_nthreads(nthreads)
 
     ! filename = "stl/unitSphere_N3.stl"
     ! Nx = 64
@@ -419,7 +419,7 @@ program main
     call fftw_free(ptr2) ! phihat
     call fftw_free(ptr3) ! rhs_hat
     call fftw_free(ptr4) ! rhs
-    call fftw_cleanup_threads
+    !call fftw_cleanup_threads
 
     deallocate(Gx) ; deallocate(Gy) ; deallocate(Gz)
 
